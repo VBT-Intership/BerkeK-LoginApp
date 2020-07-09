@@ -12,6 +12,6 @@ flutter run
 ```
 
 ## Sample Image
-[![Image01](https://raw.githubusercontent.com/VBT-Intership/BerkeK-LoginApp/tree/master/result.png)]() <br/>
+[![Image01](https://raw.githubusercontent.com/VBT-Intership/BerkeK-LoginApp/master/result.png)]() <br/>
 
 
