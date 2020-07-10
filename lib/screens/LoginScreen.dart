@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:login_app/components/createText.dart';
 import 'package:login_app/helpers/FadeRoute.dart';
+import 'package:login_app/networkOperations/UserOperations.dart';
 import 'package:login_app/screens/WelcomeScreen.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -9,7 +11,18 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey();
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController txtMail = new TextEditingController();
+  TextEditingController txtPassword = new TextEditingController();
+
+  UserOperations userOperations = new UserOperations();
+
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +64,20 @@ class _LoginScreenState extends State<LoginScreen> {
             height: 20,
           ),
           _createLoginButton(),
+          SizedBox(
+            height: 20,
+          ),
+          isLoading
+              ? Text(
+                  "Yükleniyor...",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 22),
+                )
+              : Text("")
         ],
       ),
     );
   }
-
 
   Widget _createForm() {
     return Form(
@@ -63,6 +85,13 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         children: [
           TextFormField(
+            controller: txtMail,
+            validator: (value) {
+              if (value.length < 2) {
+                return "Please fill in the this area";
+              }
+              return null;
+            },
             decoration: InputDecoration(
                 labelText: "Email address",
                 floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -74,6 +103,14 @@ class _LoginScreenState extends State<LoginScreen> {
             height: 10,
           ),
           TextFormField(
+            controller: txtPassword,
+            obscureText: true,
+            validator: (value) {
+              if (value.length < 2) {
+                return "Please fill in the this area";
+              }
+              return null;
+            },
             decoration: InputDecoration(
               labelText: "Password",
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -96,10 +133,10 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 50,
           child: FlatButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                FadeRoute(page: WelcomeScreen()),
-              );
+              setState(() {
+                isLoading = true;
+              });
+              _loginOperation(txtMail.text, txtPassword.text);
             },
             color: Colors.blueAccent.shade400,
             shape: StadiumBorder(),
@@ -122,5 +159,54 @@ class _LoginScreenState extends State<LoginScreen> {
             FontWeight.normal, TextAlign.center),
       ),
     );
+  }
+
+  void _loginOperation(String username, String password) {
+    if (_formKey.currentState.validate()) {
+      setState(() {
+        isLoading = true;
+      });
+      userOperations.loginUser(username, password).then((value) => {
+            /* Login Success */
+            if (value.length >= 1)
+              {
+                Navigator.push(
+                  context,
+                  FadeRoute(page: WelcomeScreen()),
+                )
+              }
+            else
+              {_onAlertButtonPressed(context)}
+          });
+    }else{
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  /* Show error alert */
+  _onAlertButtonPressed(context) {
+    setState(() {
+      isLoading = false;
+    });
+    Alert(
+      context: context,
+      type: AlertType.error,
+      title: "Hatalı Şifre",
+      desc: "Şifreyi Yanlış Girdiniz.",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Tamam",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          width: 120,
+        )
+      ],
+    ).show();
   }
 }

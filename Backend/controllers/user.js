@@ -29,10 +29,6 @@ exports.loginUser = (req, res, next) => {
     var password = req.body.password;
 
     User.find({username: username, password: password}).then((developers) => {
-        if(developers != null){
-            res.json(developers);
-        }else{
-            res.json("Error");
-        }
+        res.json(developers);
     });
 }
